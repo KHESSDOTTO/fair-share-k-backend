@@ -10,7 +10,7 @@ const userSchema = new Schema({
     match: /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/gm,
   },
   passwordHash: { type: String, required: true },
-  type: { type: String, enum: ["CLIENT", "BUSINESS"], default: "CLIENT" },
+  type: { type: String, enum: ["CLIENT", "BUSINESS"] },
   createdAt: { type: Date, default: Date.now() },
 });
 

@@ -2,7 +2,8 @@ import express from "express";
 import { generateToken } from "../config/jwt.config.js";
 import isAuth from "../middlewares/isAuth.js";
 import attachCurrentUser from "../middlewares/attachCurrentUser.js";
-import { isAdmin } from "../middlewares/isAdmin.js";
+import { isClient } from "../middlewares/isClient.js";
+import { isBusiness } from "../middlewares/isBusiness.js";
 import { UserModel } from "../model/user.model.js";
 
 import bcrypt from "bcrypt";
