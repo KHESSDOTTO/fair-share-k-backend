@@ -47,12 +47,13 @@ userRouter.post("/login", async (req, res) => {
     if (await bcrypt.compare(password, user.passwordHash)) {
       const token = generateToken(user);
       return res.status(200).json({
-        user: {
-          name: user.name,
-          email: user.email,
-          _id: user._id,
-          type: user.type,
-        },
+        // user: {
+        //   name: user.name,
+        //   email: user.email,
+        //   _id: user._id,
+        //   type: user.type,
+        // },
+        user: { ...user._doc },
         token: token,
       });
     } else {
