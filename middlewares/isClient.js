@@ -1,6 +1,6 @@
-export async function isAdmin(req, res, next) {
+export async function isClient(req, res, next) {
   try {
-    if (req.currentUser.role !== "ADMIN") {
+    if (req.currentUser.type !== "CLIENT") {
       return res.status(401).json({ msg: "User unauthorized." });
     }
 
