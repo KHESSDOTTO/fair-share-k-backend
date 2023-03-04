@@ -1,5 +1,8 @@
 import jwt from "jsonwebtoken";
 
+// obs para refatoração posterior: testar passando apenas o _id. Pois o "attachCurrentUser" utiliza somente ele para a query
+// que obtém e salva as demais informações do ususário logado.
+
 export function generateToken(user) {
   const signature = process.env.TOKEN_SIGN_SECRET;
   const expiration = "12h";
