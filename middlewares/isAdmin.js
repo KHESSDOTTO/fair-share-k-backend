@@ -1,3 +1,5 @@
+// TEREMOS QUE MUDAR PORQUE NÃO TEMOS MAIS ADMIN COMO "ROLE"
+
 export async function isAdmin(req, res, next) {
   try {
     if (req.currentUser.role !== "ADMIN") {
