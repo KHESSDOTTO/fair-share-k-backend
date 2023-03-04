@@ -5,17 +5,14 @@ import attachCurrentUser from "../middlewares/attachCurrentUser.js";
 import { isClient } from "../middlewares/isClient.js";
 import { isBusiness } from "../middlewares/isBusiness.js";
 import { UserModel } from "../model/user.model.js";
-
 import bcrypt from "bcrypt";
 
 const SALT_ROUNDS = 10;
-
 const userRouter = express.Router();
 
 userRouter.post("/signup", async (req, res) => {
   try {
     const { password } = req.body;
-
     if (
       !password ||
       !password.match(
@@ -26,16 +23,12 @@ userRouter.post("/signup", async (req, res) => {
         msg: "Email ou senha invalidos. Verifique se ambos atendem as requisições.",
       });
     }
-
     const salt = await bcrypt.genSalt(SALT_ROUNDS);
-
     const hashedPassword = await bcrypt.hash(password, salt);
-
     const createdUser = await UserModel.create({
       ...req.body,
       passwordHash: hashedPassword,
     });
-
     delete createdUser._doc.passwordHash;
     return res.status(201).json(createdUser);
   } catch (err) {
@@ -47,16 +40,12 @@ userRouter.post("/signup", async (req, res) => {
 userRouter.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const user = await UserModel.findOne({ email: email });
-
     if (!user) {
       return res.status(404).json({ msg: "Email ou senha invalidos." });
     }
-
     if (await bcrypt.compare(password, user.passwordHash)) {
       const token = generateToken(user);
-
       return res.status(200).json({
         user: {
           name: user.name,
