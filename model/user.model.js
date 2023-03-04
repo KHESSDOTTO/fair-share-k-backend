@@ -20,6 +20,7 @@ const userSchema = new Schema({
   cpf: { type: String, trim: true, match: /^[0-9]{11}$/gm },
   cnpj: { type: String, trim: true, match: /^[0-9]{14}$/gm },
   contactPhone: { type: String, trim: true, match: /^[0-9]{10,11}$/gm },
+  favorites: [{ type: Schema.Types.ObjectId, ref: "User" }],
   createdAt: { type: Date, default: Date.now() },
 });
 
