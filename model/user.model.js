@@ -18,7 +18,7 @@ const userSchema = new Schema({
   neighborhood: { type: String, required: true, trim: true },
   type: { type: String, enum: ["CLIENT", "BUSINESS"], required: true },
   cpf: { type: String, trim: true, match: /^[0-9]{11}$/gm },
-  cnpj: { type: String, trim: true, match: /^[0-9]{11}$/gm },
+  cnpj: { type: String, trim: true, match: /^[0-9]{14}$/gm },
   contactPhone: { type: String, trim: true, match: /^[0-9]{10,11}$/gm },
   createdAt: { type: Date, default: Date.now() },
 });
