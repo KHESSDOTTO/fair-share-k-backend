@@ -114,18 +114,18 @@ productRouter.put(
     try {
       const { productId } = req.params;
       const selProduct = await ProductModel.findById(productId);
-      if (req.currentUser._id !== selProduct._doc._id) {
+      if (req.currentUser._id !== selProduct._doc.creator) {
         return res
           .status(401)
           .json(
             "Unauthorized - product being edited does not belong to the business that is trying to edit it."
           );
       }
-      if (req.body.name) {
+      if (req.body.name && req.body.price) {
         return res
           .status(401)
           .json(
-            "To change the name of the offer, please delete this offer and make another one."
+            "To change the name or the price of the offer, please delete this offer and make another one."
           );
       }
       const updatedProduct = await ProductModel.findByIdAndUpdate(

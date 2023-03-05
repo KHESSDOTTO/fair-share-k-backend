@@ -95,7 +95,7 @@ userRouter.delete("/delete", isAuth, attachCurrentUser, async (req, res) => {
   try {
     const deletedUser = await UserModel.findByIdAndDelete(req.currentUser._id);
     delete deletedUser._doc.passwordHash;
-    return res.status(200).json(deletedUser);
+    return res.status(200).json("User deleted.");
   } catch (err) {
     console.log(err);
     return res.status(500).json(err);

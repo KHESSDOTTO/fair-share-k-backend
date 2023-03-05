@@ -38,14 +38,13 @@ orderRouter.delete(
   async (req, res) => {
     try {
       const { orderId } = req.params,
-        selOrder = await OrderModel.findById(orderId),
-        updatedUser = await OrderModel.findByIdAndUpdate(
+        updatedUser = await UserModel.findByIdAndUpdate(
           req.currentUser._id,
           { $pull: { orders: orderId } },
           { runValidators: true, new: true }
         );
       console.log(`Soft deleted: ${orderId}. From: ${updatedUser._doc.name}.`);
-      return res.status(200).json(selOrder);
+      return res.status(200).json(updatedUser);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -54,37 +53,37 @@ orderRouter.delete(
 );
 
 // Cliente pode editar o pedido contanto que a empresa nao tenha confirmado a reserva (status).
-orderRouter.put(
-  "/edit/orderParams/:orderId",
-  isAuth,
-  attachCurrentUser,
-  isClient,
-  async (req, res) => {
-    try {
-      const { orderId } = req.params,
-        selOrder = await OrderModel.findById(orderId);
-      if (req.currentUser._id !== selOrder._doc.client) {
-        return res.status(401).json("You can't edit this user's order.");
-      }
-      if (selOrder._doc.status !== "Pending confirmation") {
-        return res
-          .status(401)
-          .json(
-            "You can't edit this order because it has been already confirmed or canceled."
-          );
-      }
-      const updatedOrder = OrderModel.findByIdAndUpdate(
-        orderId,
-        { ...req.body },
-        { runValidators: true, new: true }
-      );
-      return res.status(200).json(updatedOrder);
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json(err);
-    }
-  }
-);
+// orderRouter.put(
+//   "/edit/orderParams/:orderId",
+//   isAuth,
+//   attachCurrentUser,
+//   isClient,
+//   async (req, res) => {
+//     try {
+//       const { orderId } = req.params,
+//         selOrder = await OrderModel.findById(orderId);
+//       if (req.currentUser._id !== selOrder._doc.client) {
+//         return res.status(401).json("You can't edit this user's order.");
+//       }
+//       if (selOrder._doc.status !== "Pending confirmation") {
+//         return res
+//           .status(401)
+//           .json(
+//             "You can't edit this order because it has been already confirmed or canceled."
+//           );
+//       }
+//       const updatedOrder = OrderModel.findByIdAndUpdate(
+//         orderId,
+//         { ...req.body },
+//         { runValidators: true, new: true }
+//       );
+//       return res.status(200).json(updatedOrder);
+//     } catch (err) {
+//       console.log(err);
+//       return res.status(500).json(err);
+//     }
+//   }
+// );
 
 // Usuario pode editar o status do pedido (empresa pode aceitar, rejeitar e concluir / cliente pode cancelar).
 orderRouter.put(
@@ -118,9 +117,7 @@ orderRouter.put(
         selOrder._doc.status === "Canceled" ||
         selOrder._doc.status === "Rejected"
       ) {
-        return res
-          .status(401)
-          .json("Order already concluded, rejected or canceled.");
+        return res.status(401).json(`Order already ${selOrder._doc.status}.`);
       }
 
       // Checa o type de usuario logado para identificar os status que seria validos em uma solicitacao de alteracao.
@@ -152,7 +149,7 @@ orderRouter.put(
   }
 );
 
-// Cliente ou empresa (usuario logado) podem visualizar os seus pedidos.
+// Cliente ou empresa (usuario logado) podem visualizar os seus pedidos CONSERTAR.
 orderRouter.get(
   "/get/myOrders",
   isAuth,
