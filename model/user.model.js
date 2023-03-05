@@ -38,6 +38,8 @@ const userSchema = new Schema({
     unique: true,
   },
   favorites: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  orders: [{ type: Schema.Types.ObjectId, ref: "Order" }],
+  products: [{ type: Schema.Types.ObjectId, ref: "Product" }],
   createdAt: { type: Date, default: Date.now() },
 });
 
