@@ -66,7 +66,13 @@ productRouter.delete(
   }
 );
 
-// Get all products (feed).
+// Get all products (feed) - rota não protegida.
 // productRouter.get()
+
+// Empresa logada pode visualizar todos os seus produtos.
+
+// Usuário logado (client ou business) pode acessar algum produto específico pelo ID (details).
+
+// Empresa logada pode alterar o seu product.
 
 export { productRouter };
