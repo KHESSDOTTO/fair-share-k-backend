@@ -4,6 +4,7 @@ import express from "express";
 import { connectToDB } from "./config/db.config.js";
 import { uploadImgRouter } from "./routes/uploadImage.routes.js";
 import { userRouter } from "./routes/user.routes.js";
+import { businessRouter } from "./routes/business.routes.js";
 
 dotenv.config();
 connectToDB();
@@ -12,8 +13,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
-
 
 app.use(`/api/user`, userRouter);
 app.use(`/api/uploadImage`, uploadImgRouter);
