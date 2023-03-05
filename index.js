@@ -4,7 +4,6 @@ import express from "express";
 import { connectToDB } from "./config/db.config.js";
 import { uploadImgRouter } from "./routes/uploadImage.routes.js";
 import { userRouter } from "./routes/user.routes.js";
-import { businessRouter } from "./routes/business.routes.js";
 
 dotenv.config();
 connectToDB();
