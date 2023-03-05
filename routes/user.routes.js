@@ -4,14 +4,24 @@ import isAuth from "../middlewares/isAuth.js";
 import attachCurrentUser from "../middlewares/attachCurrentUser.js";
 import { UserModel } from "../model/user.model.js";
 import bcrypt from "bcrypt";
+import nodemailer from "nodemailer";
 
 const SALT_ROUNDS = 10;
 const userRouter = express.Router();
 
+let transporter = nodemailer.createTransport({
+  service: "Hotmail",
+  auth: {
+    secure: false,
+    user: "fairshare-wd@hotmail.com",
+    pass: "SenhaSegura321",
+  },
+});
+
 // Criar um novo usuario.
 userRouter.post("/signup", async (req, res) => {
   try {
-    const { password } = req.body;
+    const { password, email } = req.body;
     if (
       !password ||
       !password.match(
@@ -30,10 +40,34 @@ userRouter.post("/signup", async (req, res) => {
     });
     delete createdUser._doc.passwordHash;
     delete createdUser._doc.favorites;
+
+    const mailOptions = {
+      from: "fairshare-wd@hotmail.com",
+      to: email,
+      subject: "Ativação de conta",
+      html: `<p>Clique aqui para ativar sua conta:<p> <a href=http://localhost:${process.env.PORT}/api/user/activate-account/${createdUser._id}>CLIQUE AQUI</a>`,
+    };
+    await transporter.sendMail(mailOptions);
     return res.status(201).json(createdUser);
   } catch (err) {
     console.log(err);
     return res.status(500).json(err);
+  }
+});
+
+userRouter.get("/activate-account/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await UserModel.findOne({ _id: userId });
+
+    if (!user) {
+      return res.send("Try again");
+    }
+    await UserModel.findByIdAndUpdate(userId, { emailConfirm: true });
+    res.send("Account confirmed!");
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json(err);
   }
 });
 
@@ -49,6 +83,10 @@ userRouter.post("/login", async (req, res) => {
       const token = generateToken(user);
       delete user._doc.passwordHash;
       delete user._doc.favorites;
+
+      if (!user.emailConfirm) {
+        return res.status(404).json({ msg: "Account not yet confirmed" });
+      }
       return res.status(200).json({
         user: { ...user._doc },
         token: token,

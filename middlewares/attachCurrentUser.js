@@ -1,4 +1,5 @@
 import { UserModel } from "../model/user.model.js";
+import nodemailer from "nodemailer";
 
 export default async function attachCurrentUser(req, res, next) {
   try {
