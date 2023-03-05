@@ -2,14 +2,13 @@ import express from "express";
 import { generateToken } from "../config/jwt.config.js";
 import isAuth from "../middlewares/isAuth.js";
 import attachCurrentUser from "../middlewares/attachCurrentUser.js";
-import { isClient } from "../middlewares/isClient.js";
-import { isBusiness } from "../middlewares/isBusiness.js";
 import { UserModel } from "../model/user.model.js";
 import bcrypt from "bcrypt";
 
 const SALT_ROUNDS = 10;
 const userRouter = express.Router();
 
+// Criar um novo usuario.
 userRouter.post("/signup", async (req, res) => {
   try {
     const { password } = req.body;
@@ -30,6 +29,7 @@ userRouter.post("/signup", async (req, res) => {
       passwordHash: hashedPassword,
     });
     delete createdUser._doc.passwordHash;
+    delete createdUser._doc.favorites;
     return res.status(201).json(createdUser);
   } catch (err) {
     console.log(err);
@@ -37,6 +37,7 @@ userRouter.post("/signup", async (req, res) => {
   }
 });
 
+// Fazer login.
 userRouter.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -46,18 +47,55 @@ userRouter.post("/login", async (req, res) => {
     }
     if (await bcrypt.compare(password, user.passwordHash)) {
       const token = generateToken(user);
+      delete user._doc.passwordHash;
+      delete user._doc.favorites;
       return res.status(200).json({
-        user: {
-          name: user.name,
-          email: user.email,
-          _id: user._id,
-          type: user.type,
-        },
+        user: { ...user._doc },
         token: token,
       });
     } else {
       return res.status(401).json({ msg: "Email ou senha invalidos." });
     }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json(err);
+  }
+});
+
+// Acessar somente infos do usuario logado.
+userRouter.get("/get", isAuth, attachCurrentUser, async (req, res) => {
+  try {
+    const cUser = await UserModel.findById(req.currentUser._id);
+    delete cUser._doc.passwordHash;
+    return res.status(200).json(cUser);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json(err);
+  }
+});
+
+// Editar somente infos do usuario logado.
+userRouter.put("/edit", isAuth, attachCurrentUser, async (req, res) => {
+  try {
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      req.currentUser._id,
+      { ...req.body },
+      { runValidators: true, new: true }
+    );
+    delete updatedUser._doc.passwordHash;
+    return res.status(200).json(updatedUser);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json(err);
+  }
+});
+
+// Apagar somente o proprio usuario logado.
+userRouter.delete("/delete", isAuth, attachCurrentUser, async (req, res) => {
+  try {
+    const deletedUser = await UserModel.findByIdAndDelete(req.currentUser._id);
+    delete deletedUser._doc.passwordHash;
+    return res.status(200).json("User deleted.");
   } catch (err) {
     console.log(err);
     return res.status(500).json(err);

@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 
 const userSchema = new Schema({
-  name: { type: String, required: true, trim: true },
+  name: { type: String, required: true, trim: true, unique: true },
   email: {
     type: String,
     required: true,
@@ -17,9 +17,29 @@ const userSchema = new Schema({
   },
   neighborhood: { type: String, required: true, trim: true },
   type: { type: String, enum: ["CLIENT", "BUSINESS"], required: true },
-  cpf: { type: String, trim: true, match: /^[0-9]{11}$/gm },
-  cnpj: { type: String, trim: true, match: /^[0-9]{11}$/gm },
-  contactPhone: { type: String, trim: true, match: /^[0-9]{10,11}$/gm },
+  cpf: {
+    type: String,
+    trim: true,
+    match: /^[0-9]{11}$/gm,
+    unique: true,
+    sparse: true,
+  },
+  cnpj: {
+    type: String,
+    trim: true,
+    match: /^[0-9]{14}$/gm,
+    unique: true,
+    sparse: true,
+  },
+  contactPhone: {
+    type: String,
+    trim: true,
+    match: /^[0-9]{10,11}$/gm,
+    unique: true,
+  },
+  favorites: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  orders: [{ type: Schema.Types.ObjectId, ref: "Order" }],
+  products: [{ type: Schema.Types.ObjectId, ref: "Product" }],
   createdAt: { type: Date, default: Date.now() },
 });
 
