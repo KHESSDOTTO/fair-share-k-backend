@@ -9,7 +9,7 @@ import { UserModel } from "../model/user.model.js";
 
 const productRouter = express.Router();
 
-// Criar novo post (empresa logada).
+// Criar novo prouduct (empresa logada).
 productRouter.post(
   "/create",
   isAuth,
@@ -24,8 +24,7 @@ productRouter.post(
         updatedUser = await UserModel.findByIdAndUpdate(req.currentUser._id, {
           $push: { products: newProduct._doc._id },
         });
-      delete updatedUser._doc.passwordHash;
-      return res.status(201).json(newProduct, updatedUser);
+      return res.status(201).json(newProduct);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -41,11 +40,9 @@ productRouter.delete(
   isBusiness,
   async (req, res) => {
     try {
-      const { productId } = req.body;
-      if (
-        (await ProductModel.findById(productId)._doc.creator) !==
-        req.currentUser._id
-      ) {
+      const { productId } = req.body,
+        selProduct = await ProductModel.findById(productId);
+      if (selProduct._doc.creator !== req.currentUser._id) {
         return res
           .status(401)
           .json("Not authorized. Another company's product.");
@@ -57,8 +54,7 @@ productRouter.delete(
           $pull: { products: deletedProduct._doc._id },
         }
       );
-      delete updatedUser._doc.passwordHash;
-      return res.status(201).json(deletedProduct, updatedUser);
+      return res.status(201).json(deletedProduct);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -67,12 +63,75 @@ productRouter.delete(
 );
 
 // Get all products (feed) - rota não protegida.
-// productRouter.get()
+productRouter.get("/get/all", async (req, res) => {
+  try {
+    const allProducts = await ProductModel.find({});
+    return res.status(200).json(allProducts);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json(err);
+  }
+});
 
 // Empresa logada pode visualizar todos os seus produtos.
+productRouter.get(
+  "/get/myProducts",
+  isAuth,
+  attachCurrentUser,
+  isBusiness,
+  async (req, res) => {
+    try {
+      const myProducts = await ProductModel.find({
+        creator: req.currentUser._id,
+      });
+      return res.status(200).json(myProducts);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+);
 
 // Usuário logado (client ou business) pode acessar algum produto específico pelo ID (details).
+productRouter.get("/get/:productId", isAuth, async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const selProduct = await ProductModel.findById({ productId });
+    return res.status(200).json(selProduct);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json(err);
+  }
+});
 
 // Empresa logada pode alterar o seu product.
+productRouter.put(
+  "/edit/:productId",
+  isAuth,
+  attachCurrentUser,
+  isBusiness,
+  async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const selProduct = await ProductModel.findById(productId);
+      if (req.currentUser._id !== selProduct._doc._id) {
+        return res
+          .status(401)
+          .json(
+            "Unauthorized - product being edited does not belong to the business that is trying to edit it."
+          );
+      }
+      const updatedProduct = await ProductModel.findByIdAndUpdate(
+        productId,
+        { ...req.body },
+        { runValidators: true, new: true }
+      );
+      return res.status(200).json(updatedProduct);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+);
 
 export { productRouter };
