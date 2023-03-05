@@ -7,7 +7,7 @@ const userSchema = new Schema({
     required: true,
     unique: true,
     trim: true,
-    match: /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/gm,
+    match: /^[\w\.]+@([\w-]+\.)+[\w-]{2,4}$/,
   },
   passwordHash: { type: String, required: true },
   address: { type: String, rerquired: true, trim: true },
@@ -41,6 +41,7 @@ const userSchema = new Schema({
   orders: [{ type: Schema.Types.ObjectId, ref: "Order" }],
   products: [{ type: Schema.Types.ObjectId, ref: "Product" }],
   createdAt: { type: Date, default: Date.now() },
+  emailConfirm: { type: Boolean, default: false },
 });
 
 export const UserModel = model("User", userSchema);
