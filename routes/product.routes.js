@@ -121,6 +121,13 @@ productRouter.put(
             "Unauthorized - product being edited does not belong to the business that is trying to edit it."
           );
       }
+      if (req.body.name) {
+        return res
+          .status(401)
+          .json(
+            "To change the name of the offer, please delete this offer and make another one."
+          );
+      }
       const updatedProduct = await ProductModel.findByIdAndUpdate(
         productId,
         { ...req.body },
