@@ -8,6 +8,7 @@ import bcrypt from "bcrypt";
 const SALT_ROUNDS = 10;
 const userRouter = express.Router();
 
+// Criar um novo usuario.
 userRouter.post("/signup", async (req, res) => {
   try {
     const { password } = req.body;
@@ -36,6 +37,7 @@ userRouter.post("/signup", async (req, res) => {
   }
 });
 
+// Fazer login.
 userRouter.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -60,6 +62,7 @@ userRouter.post("/login", async (req, res) => {
   }
 });
 
+// Acessar somente infos do usuario logado.
 userRouter.get("/get", isAuth, attachCurrentUser, async (req, res) => {
   try {
     const cUser = await UserModel.findById(req.currentUser._id);
@@ -71,6 +74,7 @@ userRouter.get("/get", isAuth, attachCurrentUser, async (req, res) => {
   }
 });
 
+// Editar somente infos do usuario logado.
 userRouter.put("/edit", isAuth, attachCurrentUser, async (req, res) => {
   try {
     const updatedUser = await UserModel.findByIdAndUpdate(
@@ -86,6 +90,7 @@ userRouter.put("/edit", isAuth, attachCurrentUser, async (req, res) => {
   }
 });
 
+// Apagar somente o proprio usuario logado.
 userRouter.delete("/delete", isAuth, attachCurrentUser, async (req, res) => {
   try {
     const deletedUser = await UserModel.findByIdAndDelete(req.currentUser._id);

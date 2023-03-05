@@ -4,6 +4,7 @@ import express from "express";
 import { connectToDB } from "./config/db.config.js";
 import { uploadImgRouter } from "./routes/uploadImage.routes.js";
 import { userRouter } from "./routes/user.routes.js";
+import { productRouter } from "./routes/product.routes.js";
 
 dotenv.config();
 connectToDB();
@@ -15,6 +16,7 @@ app.use(express.json());
 
 app.use(`/api/user`, userRouter);
 app.use(`/api/uploadImage`, uploadImgRouter);
+app.use(`/api/product`, productRouter);
 
 app.listen(Number(process.env.PORT), () => {
   console.log(`Server up and running at port ${process.env.PORT}`);
