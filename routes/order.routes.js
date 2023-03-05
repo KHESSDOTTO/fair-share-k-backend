@@ -3,10 +3,10 @@
 
 import express from "express";
 import isAuth from "../middlewares/isAuth.js";
-import { isBusiness } from "../middlewares/isBusiness.js";
 import { isClient } from "../middlewares/isClient.js";
 import attachCurrentUser from "../middlewares/attachCurrentUser.js";
 import { UserModel } from "../model/user.model.js";
+import { OrderModel } from "../model/order.model.js";
 
 const orderRouter = express.Router();
 
@@ -113,9 +113,9 @@ orderRouter.put(
 
       // Checa se o pedido ja foi concluido, rejeitado, ou aceito/confirmado.
       if (
-        selOrder._doc.status === "Concluded" ||
-        selOrder._doc.status === "Canceled" ||
-        selOrder._doc.status === "Rejected"
+        selOrder._doc.status === "CONCLUDED" ||
+        selOrder._doc.status === "CANCELED" ||
+        selOrder._doc.status === "REJECTED BY COMPANY"
       ) {
         return res.status(401).json(`Order already ${selOrder._doc.status}.`);
       }
@@ -123,12 +123,12 @@ orderRouter.put(
       // Checa o type de usuario logado para identificar os status que seria validos em uma solicitacao de alteracao.
       if (req.currentUser.type === "BUSINESS") {
         let validNewStatus = [
-          "Rejected by company",
-          "Confirmed by company",
-          "Concluded",
+          "REJECTED BY COMPANY",
+          "CONFIRMED BY COMPANY",
+          "CONCLUDED",
         ];
       } else if (req.currentUser.type === "CLIENT") {
-        let validNewStatus = ["Canceled"];
+        let validNewStatus = ["CANCELED"];
       }
 
       // Checa se o novo status e valido de acordo com o tipo de usuario logado.
