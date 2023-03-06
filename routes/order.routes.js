@@ -28,7 +28,11 @@ orderRouter.post(
       await UserModel.findByIdAndUpdate(newOrder._doc.business, {
         $push: { orders: newOrder._doc._id },
       });
-      return res.status(201).json(newOrder);
+      const populatedNewOrder = await OrderModel.findById(newOrder._doc._id)
+        .populate({ path: "client", select: "name" })
+        .populate({ path: "business", select: "name" })
+        .populate("product");
+      return res.status(201).json(populatedNewOrder);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -125,7 +129,7 @@ orderRouter.put(
   }
 );
 
-// Cliente ou empresa (usuario logado) podem visualizar os seus pedidos - EU PRECISO CONSERTAR.
+// Cliente ou empresa (usuario logado) podem visualizar os seus pedidos
 orderRouter.get(
   "/get/myOrders",
   isAuth,
@@ -134,8 +138,19 @@ orderRouter.get(
     try {
       const myOrders = await UserModel.findById(req.currentUser._id, {
         orders: 1,
-        passwordHash: 0,
-      }).populate("orders");
+      })
+        .populate({
+          path: "orders",
+          populate: { path: "client", select: "name" },
+        })
+        .populate({
+          path: "orders",
+          populate: { path: "business", select: "name" },
+        })
+        .populate({
+          path: "orders",
+          populate: { path: "product" },
+        });
       return res.status(200).json(myOrders);
     } catch (err) {
       console.log(err);
@@ -151,8 +166,8 @@ orderRouter.get(
   attachCurrentUser,
   async (req, res) => {
     try {
-      const { orderId } = req.params,
-        selOrder = await OrderModel.findById(orderId);
+      const { orderId } = req.params;
+      let selOrder = await OrderModel.findById(orderId);
       if (
         JSON.stringify(selOrder._doc.business) !=
           JSON.stringify(req.currentUser._id) &&
@@ -164,6 +179,10 @@ orderRouter.get(
         console.log(req.currentUser._id);
         return res.status(401).json("Unauthorized.");
       }
+      selOrder = await OrderModel.findById(orderId)
+        .populate({ path: "client", select: "name" })
+        .populate({ path: "business", select: "name" })
+        .populate("product");
       return res.status(200).json(selOrder);
     } catch (err) {
       console.log(err);
