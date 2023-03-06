@@ -140,4 +140,46 @@ userRouter.delete("/delete", isAuth, attachCurrentUser, async (req, res) => {
   }
 });
 
+// Cliente logado pode favoritar (dar like) nos produtos
+
+userRouter.post(
+  "/post/favorites/:businessId",
+  isAuth,
+  attachCurrentUser,
+  isClient,
+  async (req, res) => {
+    try {
+      const { businessId } = req.params;
+
+      await UserModel.findByIdAndUpdate(businessId, {
+        $addToSet: { favorites: businessId },
+      });
+      return res.status(200).json(newFavorite);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+);
+
+// Cliente logado pode acessar todos os seus favoritos
+
+userRouter.get(
+  "/get/all-favorites",
+  isAuth,
+  attachCurrentUser,
+  isClient,
+  async (req, res) => {
+    try {
+      const userFavorite = await UserModel.findById(
+        req.currentUser._id
+      ).populate("favorites");
+      return res.status(201).json(userFavorite);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+);
+
 export { userRouter };

@@ -37,6 +37,7 @@ const userSchema = new Schema({
     match: /^[0-9]{10,11}$/gm,
     unique: true,
   },
+
   favorites: [{ type: Schema.Types.ObjectId, ref: "User" }],
   orders: [{ type: Schema.Types.ObjectId, ref: "Order" }],
   products: [{ type: Schema.Types.ObjectId, ref: "Product" }],
