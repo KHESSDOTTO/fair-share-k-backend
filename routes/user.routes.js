@@ -160,6 +160,27 @@ userRouter.post(
   }
 );
 
+// Cliente logado pode desfavoritar um produto
+
+userRouter.put(
+  "/edit/favorites/:businessId",
+  isAuth,
+  attachCurrentUser,
+  isClient,
+  async (req, res) => {
+    try {
+      const { businessId } = req.params;
+      await UserModel.findByIdAndUpdate(businessId, {
+        $pull: { favorites: businessId },
+      });
+      return res.status(200).json(favorites);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+);
+
 // Cliente logado pode acessar todos os seus favoritos
 
 userRouter.get(
