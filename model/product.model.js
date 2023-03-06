@@ -6,7 +6,7 @@ const productSchema = new Schema({
   price: { type: Number, required: true },
   description: { type: String, required: true },
   expirationDate: { type: Date, required: true },
-  creator: { type: String, required: true, ref: "User" },
+  creator: { type: Schema.Types.ObjectId, required: true, ref: "User" },
 });
 
 export const ProductModel = model("Product", productSchema);

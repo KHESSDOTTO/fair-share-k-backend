@@ -115,7 +115,10 @@ productRouter.put(
     try {
       const { productId } = req.params;
       const selProduct = await ProductModel.findById(productId);
-      if (req.currentUser._id != selProduct._doc.creator) {
+      if (
+        JSON.stringify(req.currentUser._id) !=
+        JSON.stringify(selProduct._doc.creator)
+      ) {
         return res
           .status(401)
           .json(

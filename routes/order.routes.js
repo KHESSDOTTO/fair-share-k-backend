@@ -22,6 +22,10 @@ orderRouter.post(
         ...req.body,
         client: req.currentUser._id,
       });
+      const updatedUser = await UserModel.findByIdAndUpdate(
+        req.currentUser._id,
+        { $push: { orders: newOrder._doc._id } }
+      );
       return res.status(201).json(newOrder);
     } catch (err) {
       console.log(err);
@@ -98,8 +102,10 @@ orderRouter.put(
 
       // Verifica se o pedido pertence ao usuario logado (client ou business)
       if (
-        req.currentUser._id !== selOrder._doc.client &&
-        req.currentUser._id !== selOrder._doc.business
+        JSON.stringify(req.currentUser._id) !=
+          JSON.stringify(selOrder._doc.client) &&
+        JSON.stringify(req.currentUser._id) !=
+          JSON.stringify(selOrder._doc.business)
       ) {
         return res.status(401).json("You can't edit this order.");
       }
@@ -121,14 +127,15 @@ orderRouter.put(
       }
 
       // Checa o type de usuario logado para identificar os status que seria validos em uma solicitacao de alteracao.
+      let validNewStatus = [];
       if (req.currentUser.type === "BUSINESS") {
-        let validNewStatus = [
+        validNewStatus = [
           "REJECTED BY COMPANY",
           "CONFIRMED BY COMPANY",
           "CONCLUDED",
         ];
       } else if (req.currentUser.type === "CLIENT") {
-        let validNewStatus = ["CANCELED"];
+        validNewStatus = ["CANCELED"];
       }
 
       // Checa se o novo status e valido de acordo com o tipo de usuario logado.
@@ -149,19 +156,17 @@ orderRouter.put(
   }
 );
 
-// Cliente ou empresa (usuario logado) podem visualizar os seus pedidos CONSERTAR.
+// Cliente ou empresa (usuario logado) podem visualizar os seus pedidos - EU PRECISO CONSERTAR.
 orderRouter.get(
   "/get/myOrders",
   isAuth,
   attachCurrentUser,
   async (req, res) => {
     try {
-      const myOrders = await OrderModel.find({
-        $or: [
-          { client: req.currentUser._id },
-          { business: req.currentUser._id },
-        ],
-      });
+      const myOrders = await UserModel.findById(req.currentUser._id, {
+        orders: 1,
+        passwordHash: 0,
+      }).populate("orders");
       return res.status(200).json(myOrders);
     } catch (err) {
       console.log(err);
@@ -180,9 +185,14 @@ orderRouter.get(
       const { orderId } = req.params,
         selOrder = await OrderModel.findById(orderId);
       if (
-        selOrder._doc.business != req.currentUser._id &&
-        selOrder._doc.client != req.currentUser._id
+        JSON.stringify(selOrder._doc.business) !=
+          JSON.stringify(req.currentUser._id) &&
+        JSON.stringify(selOrder._doc.client) !=
+          JSON.stringify(req.currentUser._id)
       ) {
+        console.log(selOrder._doc.business);
+        console.log(selOrder._doc.client);
+        console.log(req.currentUser._id);
         return res.status(401).json("Unauthorized.");
       }
       return res.status(200).json(selOrder);

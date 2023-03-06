@@ -12,6 +12,7 @@ const orderSchema = new Schema({
       "CONFIRMED BY COMPANY",
       "CONCLUDED",
       "CANCELED",
+      "PENDING",
     ],
     default: "PENDING",
   },
