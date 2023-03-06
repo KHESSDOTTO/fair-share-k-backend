@@ -7,6 +7,7 @@ import { isBusiness } from "../middlewares/isBusiness.js";
 import attachCurrentUser from "../middlewares/attachCurrentUser.js";
 import { UserModel } from "../model/user.model.js";
 import { ProductModel } from "../model/product.model.js";
+import { isClient } from "../middlewares/isClient.js";
 
 const productRouter = express.Router();
 
