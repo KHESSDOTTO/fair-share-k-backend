@@ -5,6 +5,7 @@ import attachCurrentUser from "../middlewares/attachCurrentUser.js";
 import { UserModel } from "../model/user.model.js";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
+import { isClient } from "../middlewares/isClient.js";
 
 const SALT_ROUNDS = 10;
 const userRouter = express.Router();
@@ -152,6 +153,27 @@ userRouter.post(
         $addToSet: { favorites: businessId },
       });
       return res.status(200).json(newFavorite);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+);
+
+// Cliente logado pode desfavoritar um produto
+
+userRouter.put(
+  "/edit/favorites/:businessId",
+  isAuth,
+  attachCurrentUser,
+  isClient,
+  async (req, res) => {
+    try {
+      const { businessId } = req.params;
+      await UserModel.findByIdAndUpdate(businessId, {
+        $pull: { favorites: businessId },
+      });
+      return res.status(200).json(favorites);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
