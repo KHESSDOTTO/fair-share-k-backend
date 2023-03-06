@@ -6,6 +6,8 @@ import { UserModel } from "../model/user.model.js";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { isClient } from "../middlewares/isClient.js";
+import { productRouter } from "./product.routes.js";
+import { ProductModel } from "../model/product.model.js";
 
 const SALT_ROUNDS = 10;
 const userRouter = express.Router();
@@ -129,7 +131,11 @@ userRouter.put("/edit", isAuth, attachCurrentUser, async (req, res) => {
 // Apagar somente o proprio usuario logado.
 userRouter.delete("/delete", isAuth, attachCurrentUser, async (req, res) => {
   try {
-    const deletedUser = await UserModel.findByIdAndDelete(req.currentUser._id);
+    let deletedUser = await UserModel.findById(req.currentUser._id);
+    if (deletedUser._doc.type === "BUSINESS") {
+      await ProductModel.deleteMany({ creator: req.currentUser._id });
+    }
+    deletedUser = await UserModel.findByIdAndDelete(req.currentUser._id);
     delete deletedUser._doc.passwordHash;
     return res.status(200).json("User deleted.");
   } catch (err) {
