@@ -1,8 +1,9 @@
 import { Schema, model } from "mongoose";
 
 const orderSchema = new Schema({
-  client: { type: String, required: true, ref: "User" },
-  business: { type: String, required: true, ref: "User" },
+  client: { type: Schema.Types.ObjectId, required: true, ref: "User" },
+  business: { type: Schema.Types.ObjectId, required: true, ref: "User" },
+  product: { type: Schema.Types.ObjectId, required: true, ref: "Product" },
   withdraw: { type: Date, required: true },
   status: {
     type: String,
@@ -11,6 +12,7 @@ const orderSchema = new Schema({
       "CONFIRMED BY COMPANY",
       "CONCLUDED",
       "CANCELED",
+      "PENDING",
     ],
     default: "PENDING",
   },

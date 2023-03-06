@@ -29,7 +29,7 @@ userRouter.post("/signup", async (req, res) => {
       )
     ) {
       return res.status(400).json({
-        msg: "Email ou senha invalidos. Verifique se ambos atendem as requisições.",
+        msg: "Invalid email or password. Check if both match the required format.",
       });
     }
     const salt = await bcrypt.genSalt(SALT_ROUNDS);
@@ -40,14 +40,13 @@ userRouter.post("/signup", async (req, res) => {
     });
     delete createdUser._doc.passwordHash;
     delete createdUser._doc.favorites;
-
     const mailOptions = {
       from: "fairshare-wd@hotmail.com",
       to: email,
       subject: "Ativação de conta",
       html: `<p>Clique aqui para ativar sua conta:<p> <a href=http://localhost:${process.env.PORT}/api/user/activate-account/${createdUser._id}>CLIQUE AQUI</a>`,
     };
-    await transporter.sendMail(mailOptions);
+    // await transporter.sendMail(mailOptions);
     return res.status(201).json(createdUser);
   } catch (err) {
     console.log(err);
@@ -59,7 +58,6 @@ userRouter.get("/activate-account/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
     const user = await UserModel.findOne({ _id: userId });
-
     if (!user) {
       return res.send("Try again");
     }
@@ -77,13 +75,12 @@ userRouter.post("/login", async (req, res) => {
     const { email, password } = req.body;
     const user = await UserModel.findOne({ email: email });
     if (!user) {
-      return res.status(404).json({ msg: "Email ou senha invalidos." });
+      return res.status(404).json({ msg: "Invalid email or password." });
     }
     if (await bcrypt.compare(password, user.passwordHash)) {
       const token = generateToken(user);
       delete user._doc.passwordHash;
       delete user._doc.favorites;
-
       if (!user.emailConfirm) {
         return res.status(404).json({ msg: "Account not yet confirmed" });
       }
@@ -92,7 +89,7 @@ userRouter.post("/login", async (req, res) => {
         token: token,
       });
     } else {
-      return res.status(401).json({ msg: "Email ou senha invalidos." });
+      return res.status(401).json({ msg: "Invalid email or password." });
     }
   } catch (err) {
     console.log(err);

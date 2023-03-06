@@ -36,15 +36,15 @@ productRouter.post(
 
 // Empresa logada pode apagar um produto seu.
 productRouter.delete(
-  "/delete",
+  "/delete/:productId",
   isAuth,
   attachCurrentUser,
   isBusiness,
   async (req, res) => {
     try {
-      const { productId } = req.body,
+      const { productId } = req.params,
         selProduct = await ProductModel.findById(productId);
-      if (selProduct._doc.creator !== req.currentUser._id) {
+      if (selProduct._doc.creator != req.currentUser._id) {
         return res
           .status(401)
           .json("Not authorized. Another company's product.");
@@ -56,7 +56,7 @@ productRouter.delete(
           $pull: { products: deletedProduct._doc._id },
         }
       );
-      return res.status(201).json(deletedProduct);
+      return res.status(200).json(deletedProduct);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -98,7 +98,7 @@ productRouter.get(
 productRouter.get("/get/:productId", isAuth, async (req, res) => {
   try {
     const { productId } = req.params;
-    const selProduct = await ProductModel.findById({ productId });
+    const selProduct = await ProductModel.findById(productId);
     return res.status(200).json(selProduct);
   } catch (err) {
     console.log(err);
@@ -116,14 +116,17 @@ productRouter.put(
     try {
       const { productId } = req.params;
       const selProduct = await ProductModel.findById(productId);
-      if (req.currentUser._id !== selProduct._doc.creator) {
+      if (
+        JSON.stringify(req.currentUser._id) !=
+        JSON.stringify(selProduct._doc.creator)
+      ) {
         return res
           .status(401)
           .json(
             "Unauthorized - product being edited does not belong to the business that is trying to edit it."
           );
       }
-      if (req.body.name && req.body.price) {
+      if (req.body.name || req.body.price) {
         return res
           .status(401)
           .json(
