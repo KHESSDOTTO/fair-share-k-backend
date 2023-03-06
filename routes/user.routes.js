@@ -5,6 +5,7 @@ import attachCurrentUser from "../middlewares/attachCurrentUser.js";
 import { UserModel } from "../model/user.model.js";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
+import { isClient } from "../middlewares/isClient.js";
 
 const SALT_ROUNDS = 10;
 const userRouter = express.Router();

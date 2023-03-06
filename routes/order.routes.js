@@ -22,10 +22,12 @@ orderRouter.post(
         ...req.body,
         client: req.currentUser._id,
       });
-      const updatedUser = await UserModel.findByIdAndUpdate(
-        req.currentUser._id,
-        { $push: { orders: newOrder._doc._id } }
-      );
+      await UserModel.findByIdAndUpdate(req.currentUser._id, {
+        $push: { orders: newOrder._doc._id },
+      });
+      await UserModel.findByIdAndUpdate(newOrder._doc.business, {
+        $push: { orders: newOrder._doc._id },
+      });
       return res.status(201).json(newOrder);
     } catch (err) {
       console.log(err);
@@ -55,39 +57,6 @@ orderRouter.delete(
     }
   }
 );
-
-// Cliente pode editar o pedido contanto que a empresa nao tenha confirmado a reserva (status).
-// orderRouter.put(
-//   "/edit/orderParams/:orderId",
-//   isAuth,
-//   attachCurrentUser,
-//   isClient,
-//   async (req, res) => {
-//     try {
-//       const { orderId } = req.params,
-//         selOrder = await OrderModel.findById(orderId);
-//       if (req.currentUser._id !== selOrder._doc.client) {
-//         return res.status(401).json("You can't edit this user's order.");
-//       }
-//       if (selOrder._doc.status !== "Pending confirmation") {
-//         return res
-//           .status(401)
-//           .json(
-//             "You can't edit this order because it has been already confirmed or canceled."
-//           );
-//       }
-//       const updatedOrder = OrderModel.findByIdAndUpdate(
-//         orderId,
-//         { ...req.body },
-//         { runValidators: true, new: true }
-//       );
-//       return res.status(200).json(updatedOrder);
-//     } catch (err) {
-//       console.log(err);
-//       return res.status(500).json(err);
-//     }
-//   }
-// );
 
 // Usuario pode editar o status do pedido (empresa pode aceitar, rejeitar e concluir / cliente pode cancelar).
 orderRouter.put(
@@ -143,7 +112,7 @@ orderRouter.put(
         return res.status(401).json("Please, insert a valid status.");
       }
 
-      const updatedOrder = OrderModel.findByIdAndUpdate(
+      const updatedOrder = await OrderModel.findByIdAndUpdate(
         orderId,
         { status: req.body.status },
         { runValidators: true, new: true }

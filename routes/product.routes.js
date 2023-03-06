@@ -44,7 +44,10 @@ productRouter.delete(
     try {
       const { productId } = req.params,
         selProduct = await ProductModel.findById(productId);
-      if (selProduct._doc.creator != req.currentUser._id) {
+      if (
+        JSON.stringify(selProduct._doc.creator) !=
+        JSON.stringify(req.currentUser._id)
+      ) {
         return res
           .status(401)
           .json("Not authorized. Another company's product.");
@@ -99,6 +102,9 @@ productRouter.get("/get/:productId", isAuth, async (req, res) => {
   try {
     const { productId } = req.params;
     const selProduct = await ProductModel.findById(productId);
+    if (!selProduct) {
+      return res.status(404).json("Product not found.");
+    }
     return res.status(200).json(selProduct);
   } catch (err) {
     console.log(err);
