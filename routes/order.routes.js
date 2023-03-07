@@ -22,11 +22,17 @@ orderRouter.post(
         ...req.body,
         client: req.currentUser._id,
       });
-      const updatedUser = await UserModel.findByIdAndUpdate(
-        req.currentUser._id,
-        { $push: { orders: newOrder._doc._id } }
-      );
-      return res.status(201).json(newOrder);
+      await UserModel.findByIdAndUpdate(req.currentUser._id, {
+        $push: { orders: newOrder._doc._id },
+      });
+      await UserModel.findByIdAndUpdate(newOrder._doc.business, {
+        $push: { orders: newOrder._doc._id },
+      });
+      const populatedNewOrder = await OrderModel.findById(newOrder._doc._id)
+        .populate({ path: "client", select: "name" })
+        .populate({ path: "business", select: "name" })
+        .populate("product");
+      return res.status(201).json(populatedNewOrder);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -55,39 +61,6 @@ orderRouter.delete(
     }
   }
 );
-
-// Cliente pode editar o pedido contanto que a empresa nao tenha confirmado a reserva (status).
-// orderRouter.put(
-//   "/edit/orderParams/:orderId",
-//   isAuth,
-//   attachCurrentUser,
-//   isClient,
-//   async (req, res) => {
-//     try {
-//       const { orderId } = req.params,
-//         selOrder = await OrderModel.findById(orderId);
-//       if (req.currentUser._id !== selOrder._doc.client) {
-//         return res.status(401).json("You can't edit this user's order.");
-//       }
-//       if (selOrder._doc.status !== "Pending confirmation") {
-//         return res
-//           .status(401)
-//           .json(
-//             "You can't edit this order because it has been already confirmed or canceled."
-//           );
-//       }
-//       const updatedOrder = OrderModel.findByIdAndUpdate(
-//         orderId,
-//         { ...req.body },
-//         { runValidators: true, new: true }
-//       );
-//       return res.status(200).json(updatedOrder);
-//     } catch (err) {
-//       console.log(err);
-//       return res.status(500).json(err);
-//     }
-//   }
-// );
 
 // Usuario pode editar o status do pedido (empresa pode aceitar, rejeitar e concluir / cliente pode cancelar).
 orderRouter.put(
@@ -143,7 +116,7 @@ orderRouter.put(
         return res.status(401).json("Please, insert a valid status.");
       }
 
-      const updatedOrder = OrderModel.findByIdAndUpdate(
+      const updatedOrder = await OrderModel.findByIdAndUpdate(
         orderId,
         { status: req.body.status },
         { runValidators: true, new: true }
@@ -156,7 +129,7 @@ orderRouter.put(
   }
 );
 
-// Cliente ou empresa (usuario logado) podem visualizar os seus pedidos - EU PRECISO CONSERTAR.
+// Cliente ou empresa (usuario logado) podem visualizar os seus pedidos
 orderRouter.get(
   "/get/myOrders",
   isAuth,
@@ -165,8 +138,19 @@ orderRouter.get(
     try {
       const myOrders = await UserModel.findById(req.currentUser._id, {
         orders: 1,
-        passwordHash: 0,
-      }).populate("orders");
+      })
+        .populate({
+          path: "orders",
+          populate: { path: "client", select: "name" },
+        })
+        .populate({
+          path: "orders",
+          populate: { path: "business", select: "name" },
+        })
+        .populate({
+          path: "orders",
+          populate: { path: "product" },
+        });
       return res.status(200).json(myOrders);
     } catch (err) {
       console.log(err);
@@ -182,8 +166,8 @@ orderRouter.get(
   attachCurrentUser,
   async (req, res) => {
     try {
-      const { orderId } = req.params,
-        selOrder = await OrderModel.findById(orderId);
+      const { orderId } = req.params;
+      let selOrder = await OrderModel.findById(orderId);
       if (
         JSON.stringify(selOrder._doc.business) !=
           JSON.stringify(req.currentUser._id) &&
@@ -195,6 +179,10 @@ orderRouter.get(
         console.log(req.currentUser._id);
         return res.status(401).json("Unauthorized.");
       }
+      selOrder = await OrderModel.findById(orderId)
+        .populate({ path: "client", select: "name" })
+        .populate({ path: "business", select: "name" })
+        .populate("product");
       return res.status(200).json(selOrder);
     } catch (err) {
       console.log(err);

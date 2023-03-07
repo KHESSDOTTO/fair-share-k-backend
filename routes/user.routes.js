@@ -6,6 +6,8 @@ import { UserModel } from "../model/user.model.js";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { isClient } from "../middlewares/isClient.js";
+import { productRouter } from "./product.routes.js";
+import { ProductModel } from "../model/product.model.js";
 
 const SALT_ROUNDS = 10;
 const userRouter = express.Router();
@@ -44,8 +46,8 @@ userRouter.post("/signup", async (req, res) => {
     const mailOptions = {
       from: "fairshare-wd@hotmail.com",
       to: email,
-      subject: "Ativação de conta",
-      html: `<p>Clique aqui para ativar sua conta:<p> <a href=http://localhost:${process.env.PORT}/api/user/activate-account/${createdUser._id}>CLIQUE AQUI</a>`,
+      subject: "Activate account",
+      html: `<p>Click here to activate your account:<p> <a href=http://localhost:${process.env.PORT}/api/user/activate-account/${createdUser._id}>CLICK HERE</a>`,
     };
     // await transporter.sendMail(mailOptions);
     return res.status(201).json(createdUser);
@@ -129,7 +131,11 @@ userRouter.put("/edit", isAuth, attachCurrentUser, async (req, res) => {
 // Apagar somente o proprio usuario logado.
 userRouter.delete("/delete", isAuth, attachCurrentUser, async (req, res) => {
   try {
-    const deletedUser = await UserModel.findByIdAndDelete(req.currentUser._id);
+    let deletedUser = await UserModel.findById(req.currentUser._id);
+    if (deletedUser._doc.type === "BUSINESS") {
+      await ProductModel.deleteMany({ creator: req.currentUser._id });
+    }
+    deletedUser = await UserModel.findByIdAndDelete(req.currentUser._id);
     delete deletedUser._doc.passwordHash;
     return res.status(200).json("User deleted.");
   } catch (err) {
@@ -148,11 +154,19 @@ userRouter.post(
   async (req, res) => {
     try {
       const { businessId } = req.params;
-
-      await UserModel.findByIdAndUpdate(businessId, {
-        $addToSet: { favorites: businessId },
-      });
-      return res.status(200).json(newFavorite);
+      const newFavorite = await UserModel.findById(businessId);
+      if (newFavorite._doc.type === "CLIENT") {
+        return res.status(401).json("You can only favorite Businesses.");
+      }
+      const updatedUser = await UserModel.findByIdAndUpdate(
+        req.currentUser._id,
+        {
+          $addToSet: { favorites: businessId },
+        },
+        { runValidators: true, new: true }
+      );
+      delete updatedUser.passwordHash;
+      return res.status(200).json(updatedUser);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -170,10 +184,10 @@ userRouter.put(
   async (req, res) => {
     try {
       const { businessId } = req.params;
-      await UserModel.findByIdAndUpdate(businessId, {
+      await UserModel.findByIdAndUpdate(req.currentUser._id, {
         $pull: { favorites: businessId },
       });
-      return res.status(200).json(favorites);
+      return res.status(200).json(req.currentUser.favorites);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -190,9 +204,9 @@ userRouter.get(
   isClient,
   async (req, res) => {
     try {
-      const userFavorite = await UserModel.findById(
-        req.currentUser._id
-      ).populate("favorites");
+      const userFavorite = await UserModel.findById(req.currentUser._id, {
+        favorites: 1,
+      }).populate({ path: "favorites", select: "name cnpj address" });
       return res.status(201).json(userFavorite);
     } catch (err) {
       console.log(err);
