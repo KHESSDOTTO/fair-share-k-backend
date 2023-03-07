@@ -69,7 +69,10 @@ productRouter.delete(
 // Get all products (feed) - rota não protegida.
 productRouter.get("/get/all", async (req, res) => {
   try {
-    const allProducts = await ProductModel.find({});
+    const allProducts = await ProductModel.find({}).populate({
+      path: "creator",
+      select: "-passwordHash -orders",
+    });
     return res.status(200).json(allProducts);
   } catch (err) {
     console.log(err);
@@ -87,6 +90,9 @@ productRouter.get(
     try {
       const myProducts = await ProductModel.find({
         creator: req.currentUser._id,
+      }).populate({
+        path: "creator",
+        select: "-passwordHash -orders",
       });
       return res.status(200).json(myProducts);
     } catch (err) {
@@ -100,7 +106,10 @@ productRouter.get(
 productRouter.get("/get/:productId", isAuth, async (req, res) => {
   try {
     const { productId } = req.params;
-    const selProduct = await ProductModel.findById(productId);
+    const selProduct = await ProductModel.findById(productId).populate({
+      path: "creator",
+      select: "-passwordHash -orders",
+    });
     if (!selProduct) {
       return res.status(404).json("Product not found.");
     }
