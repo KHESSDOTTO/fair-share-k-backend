@@ -1,6 +1,11 @@
 import { Schema, model } from "mongoose";
 
 const userSchema = new Schema({
+  picture: {
+    type: String,
+    default:
+      "https://res.cloudinary.com/dukhlscyh/image/upload/v1678297300/pictures/file_zbjqpx.png",
+  },
   name: { type: String, required: true, trim: true, unique: true },
   picture: { type: String },
   email: {
