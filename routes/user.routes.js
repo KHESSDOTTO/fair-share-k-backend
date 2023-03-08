@@ -206,7 +206,7 @@ userRouter.get(
     try {
       const userFavorite = await UserModel.findById(req.currentUser._id, {
         favorites: 1,
-      }).populate({ path: "favorites", select: "name cnpj address" });
+      }).populate({ path: "favorites", select: "name cnpj address picture" });
       return res.status(201).json(userFavorite);
     } catch (err) {
       console.log(err);
