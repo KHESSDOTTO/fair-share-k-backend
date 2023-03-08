@@ -141,15 +141,15 @@ orderRouter.get(
       })
         .populate({
           path: "orders",
-          populate: { path: "client", select: "name" },
+          populate: { path: "client", select: "-passwordHash" },
         })
         .populate({
           path: "orders",
-          populate: { path: "business", select: "name" },
+          populate: { path: "business", select: "-passwordHash" },
         })
         .populate({
           path: "orders",
-          populate: { path: "product" },
+          populate: { path: "product", select: "-passwordHash" },
         });
       return res.status(200).json(myOrders);
     } catch (err) {
