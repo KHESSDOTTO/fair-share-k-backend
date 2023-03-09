@@ -7,7 +7,6 @@ const userSchema = new Schema({
       "https://res.cloudinary.com/dukhlscyh/image/upload/v1678297300/pictures/file_zbjqpx.png",
   },
   name: { type: String, required: true, trim: true, unique: true },
-  picture: { type: String },
   email: {
     type: String,
     required: true,
