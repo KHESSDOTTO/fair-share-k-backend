@@ -47,7 +47,7 @@ userRouter.post("/signup", async (req, res) => {
       from: "fairshare-wd@hotmail.com",
       to: email,
       subject: "Activate account",
-      html: `<p>Click here to activate your account:<p> <a href=http://localhost:${process.env.PORT}/api/user/activate-account/${createdUser._id}>CLICK HERE</a>`,
+      html: `<p>Click here to activate your account:<p> <a href=https://fair-share.cyclic.app/api/user/activate-account/${createdUser._id}>CLICK HERE</a>`,
     };
     await transporter.sendMail(mailOptions);
     return res.status(201).json(createdUser);
