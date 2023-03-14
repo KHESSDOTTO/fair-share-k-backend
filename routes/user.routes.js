@@ -15,7 +15,7 @@ let transporter = nodemailer.createTransport({
   service: "Hotmail",
   auth: {
     secure: false,
-    user: "fairshare-wd@hotmail.com",
+    user: "fairshare-wd-k@hotmail.com",
     pass: "SenhaSegura321",
   },
 });
