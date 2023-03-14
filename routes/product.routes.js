@@ -1,5 +1,4 @@
-// product model precisa ter ao menos uma propriedade de criador, um nome, um preco, uma descricao, e um _id.
-// importar ProductModel quando existir.
+// FAZER rota de reativar produto e rota de excluir permanentemente do histórico da empresa.
 
 import express from "express";
 import isAuth from "../middlewares/isAuth.js";
@@ -62,6 +61,39 @@ productRouter.delete(
         }
       );
       return res.status(200).json(deletedProduct);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+);
+
+productRouter.put(
+  "/inactivate/:productId",
+  isAuth,
+  attachCurrentUser,
+  isBusiness,
+  async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const selProduct = await ProductModel.findById(productId);
+      if (
+        JSON.stringify(req.currentUser._id) !==
+        JSON.stringify(selProduct._doc.creator)
+      ) {
+        return res.status(401).json("User unauthorized.");
+      }
+      const inactivatedProduct = await ProductModel.findByIdAndUpdate(
+        productId,
+        {
+          isActive: false,
+        },
+        {
+          runValidators: true,
+          new: true,
+        }
+      );
+      return res.status(200).json(inactivatedProduct);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
