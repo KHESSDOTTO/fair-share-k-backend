@@ -32,10 +32,7 @@ productRouter.post(
   }
 );
 
-// Empresa logada pode apagar um produto seu - SERA UMA ROTA DESCONTINUADA!! SUBSTITUIR POR ROTA QUE MUDA A PROPRIEDADE isActive
-// para FALSE e, assim, exclui ele da busca (adaptar filtro do frontend) e exclui da visualização de produtos ativos no front.
-// Adicionar botão no front para acessar produtos inativos. Para apagar o produto da lista de inativos, há apenas a exclusão do ID
-// do produto da sua lista 'products' - softDelete. Assim, o histórico de pedidos não seria comprometido.
+// Empresa logada pode apagar um produto seu - alterado para softDelete.
 productRouter.delete(
   "/delete/:productId",
   isAuth,
@@ -53,14 +50,14 @@ productRouter.delete(
           .status(401)
           .json("Not authorized. Another company's product.");
       }
-      const deletedProduct = await ProductModel.findByIdAndDelete(productId);
       const updatedUser = await UserModel.findByIdAndUpdate(
         req.currentUser._id,
         {
+          isActive: false,
           $pull: { products: deletedProduct._doc._id },
         }
       );
-      return res.status(200).json(deletedProduct);
+      return res.status(200).json(updatedUser);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -68,6 +65,7 @@ productRouter.delete(
   }
 );
 
+// Inativar produto
 productRouter.put(
   "/inactivate/:productId",
   isAuth,
@@ -94,6 +92,43 @@ productRouter.put(
         }
       );
       return res.status(200).json(inactivatedProduct);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+);
+
+// Reativar produto
+productRouter.put(
+  "/reactivate/:productId",
+  isAuth,
+  attachCurrentUser,
+  isBusiness,
+  async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const selProduct = await ProductModel.findById(productId);
+      if (
+        JSON.stringify(req.currentUser._id) !==
+        JSON.stringify(selProduct._doc.creator)
+      ) {
+        return res.status(401).json("User unauthorized.");
+      }
+      if (!JSON.stringify(req.currentUser.products).includes(productId)) {
+        return res.status(401).json("Product excluded.");
+      }
+      const reactivatedProduct = await ProductModel.findByIdAndUpdate(
+        productId,
+        {
+          isActive: true,
+        },
+        {
+          runValidators: true,
+          new: true,
+        }
+      );
+      return res.status(200).json(reactivatedProduct);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
