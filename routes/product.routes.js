@@ -33,7 +33,10 @@ productRouter.post(
   }
 );
 
-// Empresa logada pode apagar um produto seu.
+// Empresa logada pode apagar um produto seu - SERA UMA ROTA DESCONTINUADA!! SUBSTITUIR POR ROTA QUE MUDA A PROPRIEDADE isActive
+// para FALSE e, assim, exclui ele da busca (adaptar filtro do frontend) e exclui da visualização de produtos ativos no front.
+// Adicionar botão no front para acessar produtos inativos. Para apagar o produto da lista de inativos, há apenas a exclusão do ID
+// do produto da sua lista 'products' - softDelete. Assim, o histórico de pedidos não seria comprometido.
 productRouter.delete(
   "/delete/:productId",
   isAuth,
