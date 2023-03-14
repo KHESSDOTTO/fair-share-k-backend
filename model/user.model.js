@@ -48,6 +48,7 @@ const userSchema = new Schema({
   products: [{ type: Schema.Types.ObjectId, ref: "Product" }],
   createdAt: { type: Date, default: Date.now() },
   emailConfirm: { type: Boolean, default: false },
+  isActive: { type: Boolean, default: true, required: true },
 });
 
 export const UserModel = model("User", userSchema);
