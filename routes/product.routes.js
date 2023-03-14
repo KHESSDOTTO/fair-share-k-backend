@@ -48,11 +48,20 @@ productRouter.delete(
           .status(401)
           .json("Not authorized. Another company's product.");
       }
+      await ProductModel.findByIdAndUpdate(
+        productId,
+        {
+          isActive: false,
+        },
+        {
+          runValidators: true,
+          new: true,
+        }
+      );
       const updatedUser = await UserModel.findByIdAndUpdate(
         req.currentUser._id,
         {
-          isActive: false,
-          $pull: { products: deletedProduct._doc._id },
+          $pull: { products: productId },
         }
       );
       return res.status(200).json(updatedUser);
