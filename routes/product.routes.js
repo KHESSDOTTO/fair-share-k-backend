@@ -1,5 +1,3 @@
-// FAZER rota de reativar produto e rota de excluir permanentemente do histórico da empresa.
-
 import express from "express";
 import isAuth from "../middlewares/isAuth.js";
 import { isBusiness } from "../middlewares/isBusiness.js";
