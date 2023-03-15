@@ -165,11 +165,11 @@ productRouter.get(
   isBusiness,
   async (req, res) => {
     try {
-      const myProducts = await ProductModel.find({
-        creator: req.currentUser._id,
+      const myProducts = await UserModel.findById(req.currentUser._id, {
+        products: 1,
       }).populate({
-        path: "creator",
-        select: "-passwordHash -orders",
+        path: "products",
+        populate: { path: "creator", select: "-passwordHash -orders" },
       });
       return res.status(200).json(myProducts);
     } catch (err) {
