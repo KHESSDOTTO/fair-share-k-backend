@@ -83,9 +83,9 @@ userRouter.post("/login", async (req, res) => {
       const token = generateToken(user);
       delete user._doc.passwordHash;
       delete user._doc.favorites;
-      if (!user.emailConfirm) {
-        return res.status(404).json({ msg: "Account not yet confirmed" });
-      }
+      // if (!user.emailConfirm) {
+      //   return res.status(404).json({ msg: "Account not yet confirmed" });
+      // }
       return res.status(200).json({
         user: { ...user._doc },
         token: token,
