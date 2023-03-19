@@ -152,28 +152,22 @@ userRouter.delete("/delete", isAuth, attachCurrentUser, async (req, res) => {
 });
 
 // Reativar usuário
-userRouter.put(
-  "/reactivate/:userId",
-  isAuth,
-  attachCurrentUser,
-  async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const reactivatedUser = await UserModel.findByIdAndUpdate(
-        userId,
-        { isActive: true },
-        { runValidators: true, new: true }
-      );
-      return res.status(200).json(reactivatedUser);
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json(err);
-    }
+userRouter.put("/reactivate/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const reactivatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      { isActive: true },
+      { runValidators: true, new: true }
+    );
+    return res.status(200).json(reactivatedUser);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json(err);
   }
-);
+});
 
 // Cliente logado pode favoritar (dar like) nos produtos
-
 userRouter.post(
   "/post/favorites/:businessId",
   isAuth,
