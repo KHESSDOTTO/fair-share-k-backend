@@ -1,11 +1,5 @@
-# API RESTful template + Token Based Auth
+# Fair Share - Backend
 
-Template para construção de APIs utilizando Node, Express, JWT e Mongoose.
+Com o fair-share, evita-se o desperdício de comida. Os estabelecimentos anunciam com melhores preços os produtos que, caso não sejam vendidos rapidamente, seriam descartados (mercados, padarias, restaurantes, entre outros).
 
-**Utilização:**
-
-- Clique no botão "Use this template"
-- Clone o repo que for criado nesse processo
-- Execute o comando `npm install` no terminal na raiz do projeto
-- Crie um arquivo `.env` baseado no arquivo `.exemple.env` presente no repositório
-- Para colocar o servidor para rodar, execute no terminal o comando `npm run dev`
+É possível fazer reservas de pedidos para retirada e realizar o acompanhamento do status da reserva.
