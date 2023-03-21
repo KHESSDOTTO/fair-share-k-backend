@@ -1,5 +1,5 @@
 # Fair Share - Backend
 
-Com o fair-share, evita-se o desperdício de comida. Os estabelecimentos anunciam com melhores preços os produtos que, caso não sejam vendidos rapidamente, seriam descartados (mercados, padarias, restaurantes, entre outros).
+With fair-share, we avoid food waste! Business such as bakeries, restaurants, grocery shops, etc. can advertise, at lower prices, products that would be discarded if they don't sell quickly.
 
-É possível fazer reservas de pedidos para retirada e realizar o acompanhamento do status da reserva.
+It is possible to make reservations and track their status until pick up.
